@@ -1,2 +1,2 @@
 'use strict';
-import  $ from 'jquery';
+import "./slider";
