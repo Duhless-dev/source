@@ -1,12 +1,12 @@
 let gulp = require('gulp'),
 	sass = require('gulp-sass'),
 	browserSync = require('browser-sync'),
-	uglify = require('gulp-uglify'),
+	// uglify = require('gulp-uglify'),
 	concat = require('gulp-concat'),
 	rename = require('gulp-rename'),
 	del = require('del'),
-	autoprefixer = require('gulp-autoprefixer'),
-	pug = require('gulp-pug');
+	autoprefixer = require('gulp-autoprefixer');
+	// pug = require('gulp-pug');
 const imagemin = require('gulp-imagemin');
 const webpack = require("webpack-stream");
 
@@ -68,13 +68,6 @@ gulp.task('html', function () {
 			stream: true
 		}));
 });
-
-// gulp.task('script', function () {
-// 	return gulp.src('app/js/**/*.js')
-// 		.pipe(browserSync.reload({
-// 			stream: true
-// 		}));
-// });
 
 gulp.task("build-js", () => {
     return gulp.src("app/js/main.js")
