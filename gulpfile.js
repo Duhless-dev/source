@@ -10,6 +10,8 @@ let gulp = require('gulp'),
 const imagemin = require('gulp-imagemin');
 const webpack = require("webpack-stream");
 
+// const dist = "./dist/";
+const dist = "/Applications/MAMP/htdocs/test/dist/";
 
 
 //gulp.task('pug', function () {
@@ -23,9 +25,7 @@ const webpack = require("webpack-stream");
 //		}))
 //})
 
-gulp.task('clean', async function () {
-	del.sync('dist');
-});
+
 
 gulp.task('scss', function () {
 	return gulp.src('app/scss/**/*.scss')
@@ -38,7 +38,7 @@ gulp.task('scss', function () {
 		.pipe(rename({
 			suffix: '.min'
 		}))
-		.pipe(gulp.dest('app/css'))
+		.pipe(gulp.dest('app/assets/css'))
 		.pipe(browserSync.reload({
 			stream: true
 		}));
@@ -56,7 +56,7 @@ gulp.task('css', function () {
 		//'node_modules/jquery-form-styler/dist/jquery.formstyler.theme.css',
 	])
 		.pipe(concat('_libs.scss'))
-		.pipe(gulp.dest('app/scss'))
+		.pipe(gulp.dest('app/assets/scss'))
 		.pipe(browserSync.reload({
 			stream: true
 		}));
@@ -64,9 +64,8 @@ gulp.task('css', function () {
 
 gulp.task('html', function () {
 	return gulp.src('app/*.html')
-		.pipe(browserSync.reload({
-			stream: true
-		}));
+		.pipe(gulp.dest(dist))
+		.pipe(browserSync.stream());
 });
 
 gulp.task("build-js", () => {
@@ -97,10 +96,44 @@ gulp.task("build-js", () => {
                         ]
                       }
 				}))
-				.pipe(gulp.dest('app/'))
+				.pipe(gulp.dest(dist + "/js"))
                 .on("end", browserSync.reload);
 });
 
+gulp.task("copy-assets", () => {
+    return gulp.src(["./app/assets/**/*.*", "!app/assets/scss/**/*.*"])
+                .pipe(gulp.dest(dist + "/assets"))
+                .on("end", browserSync.reload);
+});
+
+gulp.task('watch', function () {
+	browserSync.init({
+		server: "./dist/",
+		port: 4000,
+		notify: true
+    });
+	// gulp.watch('app/scss/**/*.scss', gulp.parallel('css'));
+	gulp.watch('app/**/*.html', gulp.parallel('html'));
+	// gulp.watch('app/scss/**/*.scss', gulp.parallel('scss'));
+	gulp.watch('app/js/**/*.js', gulp.parallel('build-js'));
+});
+
+
+gulp.task ('images', function(){
+	return gulp.src('app/assets/img/**/*')
+		.pipe(imagemin([
+			imagemin.gifsicle({interlaced: true}),
+			imagemin.mozjpeg({quality: 75, progressive: true}),
+			imagemin.optipng({optimizationLevel: 5}),
+			imagemin.svgo({
+				plugins: [
+					{removeViewBox: true},
+					{cleanupIDs: false}
+				]
+			})
+		]))
+		.pipe(gulp.dest('dist/assets/img'));
+});
 
 gulp.task("build-prod-js", () => {
     return gulp.src("app/js/main.js")
@@ -127,54 +160,8 @@ gulp.task("build-prod-js", () => {
                         ]
                       }
 				}))
-				.pipe(gulp.dest('app/'));
+				.pipe(gulp.dest(dist));
 });
+gulp.task('build', gulp.series("build-prod-js",'images'));
 
-
-gulp.task('browser-sync', function () {
-	browserSync.init({
-		server: {
-			baseDir: "app/"
-		}
-	});
-});
-
-gulp.task ('images', function(){
-	return gulp.src('app/assets/img/**/*')
-		.pipe(imagemin([
-			imagemin.gifsicle({interlaced: true}),
-			imagemin.mozjpeg({quality: 75, progressive: true}),
-			imagemin.optipng({optimizationLevel: 5}),
-			imagemin.svgo({
-				plugins: [
-					{removeViewBox: true},
-					{cleanupIDs: false}
-				]
-			})
-		]))
-		.pipe(gulp.dest('dist/img'));
-});
-gulp.task('export', function () {
-	let buildHtml = gulp.src('app/**/*.html')
-		.pipe(gulp.dest('dist'));
-
-	let BuildCss = gulp.src('app/**/*.css')
-		.pipe(gulp.dest('dist/css'));
-
-	let BuildJs = gulp.src('app/*.js')
-		.pipe(gulp.dest('dist/'));
-
-	let BuildFonts = gulp.src('app/assets/fonts/**/*.*')
-		.pipe(gulp.dest('dist/fonts'));	
-});
-
-gulp.task('watch', function () {
-	// gulp.watch('app/scss/**/*.scss', gulp.parallel('css'));
-	gulp.watch('app/**/*.html', gulp.parallel('html'));
-	// gulp.watch('app/scss/**/*.scss', gulp.parallel('scss'));
-	gulp.watch('app/js/**/*.js', gulp.parallel('build-js'));
-});
-
-gulp.task('build', gulp.series('clean', 'export', 'images'));
-
-gulp.task('default', gulp.parallel('html', 'build-js', 'browser-sync', 'watch'));
+gulp.task('default', gulp.parallel('html', 'build-js', "copy-assets", 'watch'));
