@@ -10,8 +10,8 @@ let gulp = require('gulp'),
 const imagemin = require('gulp-imagemin');
 const webpack = require("webpack-stream");
 
-// const dist = "./dist/";
-const dist = "/Applications/MAMP/htdocs/test/dist/";
+const dist = "./dist/";
+// const dist = "/Applications/MAMP/htdocs/test/dist/";
 
 
 //gulp.task('pug', function () {
@@ -108,7 +108,7 @@ gulp.task("copy-assets", () => {
 
 gulp.task('watch', function () {
 	browserSync.init({
-		server: "./dist/",
+		server: dist,
 		port: 4000,
 		notify: true
     });

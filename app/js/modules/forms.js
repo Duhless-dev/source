@@ -1,14 +1,12 @@
-const forms = () => {
-    const form = document.querySelectorAll('form'),
-          inputs = document.querySelectorAll('input'),
-          phoneInputs = document.querySelectorAll('input[name="user_phone"]');
+import checkNumInputs from "./checkNumInputs";
 
-    phoneInputs.forEach(item => {
-        item.addEventListener('input', () => {
-            item.value = item.value.replace(/\D/, '');
-        });
-    });
-    
+const forms = (dbState) => {
+    const form = document.querySelectorAll('form'),
+          inputs = document.querySelectorAll('input');
+         
+
+
+    checkNumInputs('input[name="user_phone"]');
     const message = {
         loading: 'Загрузка...',
         success: 'Спасибо! Скоро мы с вами свяжемся',
@@ -40,7 +38,13 @@ const forms = () => {
             item.appendChild(statusMessage);
 
             const formData = new FormData(item);
-
+            console.log(dbState);
+            if (item.getAttribute('data-calc') == "end") {
+                console.log(1);
+                for (let key in dbState) {
+                    formData.append(key, dbState[key]);
+                }
+            }
             postData('assets/server.php', formData)
                 .then(res => {
                     console.log(res);
@@ -52,6 +56,8 @@ const forms = () => {
                     setTimeout(() => {
                         statusMessage.remove();
                     }, 5000);
+                    dbState.width ="";
+                    dbState.height = "";
                 });
         });
     });
